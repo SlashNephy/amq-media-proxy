@@ -12,7 +12,11 @@ import (
 	"github.com/SlashNephy/amq-media-proxy/logging"
 )
 
-var mediaURLPattern = regexp.MustCompile(`^https://\w+\.catbox\.video/\w+\.(?:mp3|webm)$`)
+var (
+	mediaURLPattern     = regexp.MustCompile(`^https://\w+\.catbox\.video/\w+\.(?:mp3|webm)$`)
+	downloadingMap      = make(map[string]struct{})
+	downloadingMapMutex *sync.Mutex
+)
 
 func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 	var params struct {
@@ -28,10 +32,13 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	// URL ごとにロックを発行
-	mu := getURLMutex(params.URL)
-	mu.Lock()
-	defer mu.Unlock()
+	// ダウンロード中ならリダイレクトする
+	downloadingMapMutex.Lock()
+	if _, ok := downloadingMap[params.URL]; ok {
+		return c.Redirect(http.StatusFound, params.URL)
+	}
+	downloadingMap[params.URL] = struct{}{}
+	downloadingMapMutex.Unlock()
 
 	// キャッシュ済みならそれを返す
 	cachePath, ok := co.media.FindCachedMediaPath(c.Request().Context(), params.URL)
@@ -51,25 +58,15 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 	c.Response().WriteHeader(http.StatusOK)
 
 	// URL をダウンロードしつつ、レスポンスに書き込む
-	if err = co.media.DownloadMedia(c.Request().Context(), params.URL, c.Response().Writer); err != nil {
+	err = co.media.DownloadMedia(c.Request().Context(), params.URL, c.Response().Writer)
+
+	// ダウンロードが終わった
+	downloadingMapMutex.Lock()
+	delete(downloadingMap, params.URL)
+	downloadingMapMutex.Unlock()
+
+	if err != nil {
 		return echo.ErrInternalServerError
 	}
-
 	return nil
-}
-
-var (
-	mapLock     sync.Mutex
-	urlMapLocks = make(map[string]*sync.Mutex)
-)
-
-func getURLMutex(url string) *sync.Mutex {
-	mapLock.Lock()
-	defer mapLock.Unlock()
-
-	if _, ok := urlMapLocks[url]; !ok {
-		urlMapLocks[url] = &sync.Mutex{}
-	}
-
-	return urlMapLocks[url]
 }
