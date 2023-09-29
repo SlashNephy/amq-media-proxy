@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/SlashNephy/amq-cache-server/config"
-	"github.com/SlashNephy/amq-cache-server/fs"
-	"github.com/SlashNephy/amq-cache-server/logging"
+	"github.com/SlashNephy/amq-media-proxy/config"
+	"github.com/SlashNephy/amq-media-proxy/fs"
+	"github.com/SlashNephy/amq-media-proxy/logging"
 )
 
 type MediaService struct {

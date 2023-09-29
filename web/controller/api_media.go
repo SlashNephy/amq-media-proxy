@@ -8,8 +8,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/SlashNephy/amq-cache-server/domain/content_type"
-	"github.com/SlashNephy/amq-cache-server/logging"
+	"github.com/SlashNephy/amq-media-proxy/domain/content_type"
+	"github.com/SlashNephy/amq-media-proxy/logging"
 )
 
 var mediaURLPattern = regexp.MustCompile(`^https://\w+\.catbox\.video/\w+\.(?:mp3|webm)$`)

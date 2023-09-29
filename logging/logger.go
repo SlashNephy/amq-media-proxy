@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/SlashNephy/amq-cache-server/config"
+	"github.com/SlashNephy/amq-media-proxy/config"
 )
 
 func NewLogger(cfg *config.Config) (*slog.Logger, error) {

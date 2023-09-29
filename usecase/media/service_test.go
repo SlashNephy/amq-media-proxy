@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/SlashNephy/amq-cache-server/config"
-	"github.com/SlashNephy/amq-cache-server/fs"
-	"github.com/SlashNephy/amq-cache-server/usecase/mock_repo"
+	"github.com/SlashNephy/amq-media-proxy/config"
+	"github.com/SlashNephy/amq-media-proxy/fs"
+	"github.com/SlashNephy/amq-media-proxy/usecase/mock_repo"
 )
 
 type MediaServiceMocks struct {

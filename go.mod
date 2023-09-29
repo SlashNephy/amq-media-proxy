@@ -1,4 +1,4 @@
-module github.com/SlashNephy/amq-cache-server
+module github.com/SlashNephy/amq-media-proxy
 
 go 1.21.0
 

@@ -8,14 +8,14 @@ package main
 
 import (
 	"context"
-	"github.com/SlashNephy/amq-cache-server/config"
-	"github.com/SlashNephy/amq-cache-server/fs"
-	"github.com/SlashNephy/amq-cache-server/logging"
-	"github.com/SlashNephy/amq-cache-server/repository/external/amq"
-	"github.com/SlashNephy/amq-cache-server/usecase/media"
-	"github.com/SlashNephy/amq-cache-server/web"
-	"github.com/SlashNephy/amq-cache-server/web/controller"
-	"github.com/SlashNephy/amq-cache-server/web/middleware/logger"
+	"github.com/SlashNephy/amq-media-proxy/config"
+	"github.com/SlashNephy/amq-media-proxy/fs"
+	"github.com/SlashNephy/amq-media-proxy/logging"
+	"github.com/SlashNephy/amq-media-proxy/repository/external/amq"
+	"github.com/SlashNephy/amq-media-proxy/usecase/media"
+	"github.com/SlashNephy/amq-media-proxy/web"
+	"github.com/SlashNephy/amq-media-proxy/web/controller"
+	"github.com/SlashNephy/amq-media-proxy/web/middleware/logger"
 )
 
 // Injectors from wire.go:

@@ -5,7 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"net/http"
 
-	"github.com/SlashNephy/amq-cache-server/usecase/media"
+	"github.com/SlashNephy/amq-media-proxy/usecase/media"
 )
 
 var requestHeaders = map[string]string{

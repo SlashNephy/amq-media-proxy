@@ -10,10 +10,10 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
-	"github.com/SlashNephy/amq-cache-server/config"
-	"github.com/SlashNephy/amq-cache-server/logging"
-	"github.com/SlashNephy/amq-cache-server/web/controller"
-	"github.com/SlashNephy/amq-cache-server/web/middleware/logger"
+	"github.com/SlashNephy/amq-media-proxy/config"
+	"github.com/SlashNephy/amq-media-proxy/logging"
+	"github.com/SlashNephy/amq-media-proxy/web/controller"
+	"github.com/SlashNephy/amq-media-proxy/web/middleware/logger"
 )
 
 type Server struct {

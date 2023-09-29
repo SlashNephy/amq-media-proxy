@@ -3,7 +3,7 @@ package controller
 import (
 	"github.com/labstack/echo/v4"
 
-	"github.com/SlashNephy/amq-cache-server/usecase/media"
+	"github.com/SlashNephy/amq-media-proxy/usecase/media"
 )
 
 type Controller struct {
