@@ -64,8 +64,12 @@ func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL string, write
 
 	// cacheFile と writer に同時にコピーする
 	multiWriter := io.MultiWriter(cacheFile, writer)
-	_, err = io.Copy(multiWriter, response.Body)
-	return err
+	if _, err = io.Copy(multiWriter, response.Body); err != nil {
+		_ = os.Remove(cachePath)
+		return err
+	}
+
+	return nil
 }
 
 var _ MediaUsecase = (*MediaService)(nil)
