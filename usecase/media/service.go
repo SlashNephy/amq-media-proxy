@@ -2,7 +2,6 @@ package media
 
 import (
 	"context"
-	"github.com/SlashNephy/amq-cache-server/fs"
 	"io"
 	"log/slog"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/SlashNephy/amq-cache-server/config"
+	"github.com/SlashNephy/amq-cache-server/fs"
 	"github.com/SlashNephy/amq-cache-server/logging"
 )
 
@@ -53,6 +53,9 @@ func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL string, write
 
 	// キャッシュファイル
 	cachePath := s.getCachePath(mediaURL)
+	if err = os.MkdirAll(filepath.Dir(cachePath), os.ModePerm); err != nil {
+		return err
+	}
 	cacheFile, err := os.Create(cachePath)
 	if err != nil {
 		return err
