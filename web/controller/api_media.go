@@ -33,9 +33,17 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
+	// MIME Type を判定する
+	contentType, err := content_type.DetectContentTypeByFilename(params.URL)
+	if err != nil {
+		logging.FromContext(c.Request().Context()).Error("unexpected content type", slog.String("url", params.URL))
+		return echo.ErrBadRequest
+	}
+
 	// ダウンロード中ならリダイレクトする
 	downloadingMapMutex.Lock()
 	if _, ok := downloadingMap[params.URL]; ok {
+		downloadingMapMutex.Unlock()
 		return c.Redirect(http.StatusFound, params.URL)
 	}
 	downloadingMap[params.URL] = struct{}{}
@@ -45,12 +53,6 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 	cachePath, ok := co.media.FindCachedMediaPath(c.Request().Context(), params.URL)
 	if ok {
 		return c.File(cachePath)
-	}
-
-	// MIME Type を判定する
-	contentType, err := content_type.DetectContentTypeByFilename(params.URL)
-	if err != nil {
-		return err
 	}
 
 	// HTTP ヘッダーを書き込む
