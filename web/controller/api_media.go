@@ -16,7 +16,7 @@ import (
 var (
 	mediaURLPattern     = regexp.MustCompile(`^https://\w+\.catbox\.video/\w+\.(?:mp3|webm)$`)
 	downloadingMap      = make(map[string]struct{})
-	downloadingMapMutex *sync.Mutex
+	downloadingMapMutex sync.Mutex
 )
 
 func (co *Controller) HandleGetApiMedia(c echo.Context) error {
