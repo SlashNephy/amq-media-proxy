@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 
 	"github.com/SlashNephy/amq-media-proxy/domain/content_type"
 	"github.com/SlashNephy/amq-media-proxy/logging"
@@ -66,6 +67,7 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 	downloadingMapMutex.Unlock()
 
 	if err != nil {
+		logging.FromContext(c.Request().Context()).Error("failed to download", slog.String("url", params.URL), slog.Any("err", errors.WithStack(err)))
 		return echo.ErrInternalServerError
 	}
 	return nil
