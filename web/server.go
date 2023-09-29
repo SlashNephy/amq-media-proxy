@@ -28,7 +28,7 @@ func NewServer(
 ) *Server {
 	e := echo.New()
 	e.HideBanner = true
-	e.IPExtractor = echo.ExtractIPFromXFFHeader()
+	e.IPExtractor = echo.ExtractIPFromRealIPHeader()
 	e.Use(
 		middleware.RequestID(),
 		loggerMiddleware.Process,
