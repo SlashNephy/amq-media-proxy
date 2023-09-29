@@ -1,8 +1,9 @@
 package controller
 
 import (
-	"github.com/SlashNephy/amq-cache-server/usecase/media"
 	"github.com/labstack/echo/v4"
+
+	"github.com/SlashNephy/amq-cache-server/usecase/media"
 )
 
 type Controller struct {

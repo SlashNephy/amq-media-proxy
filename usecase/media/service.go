@@ -63,7 +63,6 @@ func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL string, write
 	defer cacheFile.Close()
 
 	// cacheFile と writer に同時にコピーする
-	// TODO: 同時に同じ URL にリクエストが来たらどうする？
 	multiWriter := io.MultiWriter(cacheFile, writer)
 	_, err = io.Copy(multiWriter, response.Body)
 	return err

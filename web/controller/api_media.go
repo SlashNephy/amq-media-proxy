@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 	"regexp"
+	"sync"
 
 	"github.com/labstack/echo/v4"
 
@@ -15,7 +16,7 @@ var mediaURLPattern = regexp.MustCompile(`^https://\w+\.catbox\.video/\w+\.(?:mp
 
 func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 	var params struct {
-		URL string `query:"url"`
+		URL string `query:"u"`
 	}
 	if err := c.Bind(&params); err != nil {
 		return err
@@ -26,6 +27,11 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 		logging.FromContext(c.Request().Context()).Error("unexpected url", slog.String("url", params.URL))
 		return echo.ErrBadRequest
 	}
+
+	// URL ごとにロックを発行
+	mu := getURLMutex(params.URL)
+	mu.Lock()
+	defer mu.Unlock()
 
 	// キャッシュ済みならそれを返す
 	cachePath, ok := co.media.FindCachedMediaPath(c.Request().Context(), params.URL)
@@ -50,4 +56,20 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 	}
 
 	return nil
+}
+
+var (
+	mapLock     sync.Mutex
+	urlMapLocks = make(map[string]*sync.Mutex)
+)
+
+func getURLMutex(url string) *sync.Mutex {
+	mapLock.Lock()
+	defer mapLock.Unlock()
+
+	if _, ok := urlMapLocks[url]; !ok {
+		urlMapLocks[url] = &sync.Mutex{}
+	}
+
+	return urlMapLocks[url]
 }
