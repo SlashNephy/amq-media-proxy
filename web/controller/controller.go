@@ -17,6 +17,8 @@ func NewController(media media.MediaUsecase) *Controller {
 }
 
 func (co *Controller) RegisterRoutes(e *echo.Echo) {
+	e.GET("/healthcheck", co.HandleGetHealthcheck)
+
 	api := e.Group("/api")
 	api.GET("/media", co.HandleGetApiMedia)
 }
