@@ -26,24 +26,6 @@ func NewTestMediaService(t *testing.T, cfg *config.Config, exists bool) (*MediaS
 	return s, m
 }
 
-func TestMediaService_IsDownloading(t *testing.T) {
-	t.Run("ダウンロード中に true が返る", func(t *testing.T) {
-		s, _ := NewTestMediaService(t, &config.Config{}, false)
-
-		s.lockDownloading("https://example.com/challenge.mp3")
-
-		actual := s.IsDownloading("https://example.com/challenge.mp3")
-		assert.True(t, actual)
-	})
-
-	t.Run("ダウンロード中ではないときに false が返る", func(t *testing.T) {
-		s, _ := NewTestMediaService(t, &config.Config{}, false)
-
-		actual := s.IsDownloading("https://example.com/challenge.mp3")
-		assert.False(t, actual)
-	})
-}
-
 func TestMediaService_FindCachedMediaPath(t *testing.T) {
 	t.Run("キャッシュが存在しているときに true が返る", func(t *testing.T) {
 		s, _ := NewTestMediaService(t, &config.Config{

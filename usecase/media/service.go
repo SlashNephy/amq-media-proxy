@@ -67,7 +67,7 @@ func (s *MediaService) FindCachedMediaPath(mediaURL string) (string, bool) {
 		return cachePath, true
 	}
 
-	return cachePath, false
+	return "", false
 }
 
 func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL string) error {
