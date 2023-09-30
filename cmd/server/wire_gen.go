@@ -27,7 +27,10 @@ func InitializeServer(ctx context.Context) (*web.Server, error) {
 	}
 	realFileSystem := fs.NewRealFileSystem()
 	client := amq.NewAMQClient()
-	mediaService := media.NewMediaService(configConfig, realFileSystem, client)
+	mediaService, err := media.NewMediaService(configConfig, realFileSystem, client)
+	if err != nil {
+		return nil, err
+	}
 	controllerController := controller.NewController(mediaService)
 	slogLogger, err := logging.NewLogger(configConfig)
 	if err != nil {

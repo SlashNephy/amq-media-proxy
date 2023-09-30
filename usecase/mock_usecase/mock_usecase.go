@@ -153,3 +153,41 @@ func (c *MediaUsecaseIsDownloadingCall) DoAndReturn(f func(string) bool) *MediaU
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }
+
+// IsValidURL mocks base method.
+func (m *MockMediaUsecase) IsValidURL(arg0 string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsValidURL", arg0)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsValidURL indicates an expected call of IsValidURL.
+func (mr *MockMediaUsecaseMockRecorder) IsValidURL(arg0 any) *MediaUsecaseIsValidURLCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidURL", reflect.TypeOf((*MockMediaUsecase)(nil).IsValidURL), arg0)
+	return &MediaUsecaseIsValidURLCall{Call: call}
+}
+
+// MediaUsecaseIsValidURLCall wrap *gomock.Call
+type MediaUsecaseIsValidURLCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c *MediaUsecaseIsValidURLCall) Return(arg0 bool) *MediaUsecaseIsValidURLCall {
+	c.Call = c.Call.Return(arg0)
+	return c
+}
+
+// Do rewrite *gomock.Call.Do
+func (c *MediaUsecaseIsValidURLCall) Do(f func(string) bool) *MediaUsecaseIsValidURLCall {
+	c.Call = c.Call.Do(f)
+	return c
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c *MediaUsecaseIsValidURLCall) DoAndReturn(f func(string) bool) *MediaUsecaseIsValidURLCall {
+	c.Call = c.Call.DoAndReturn(f)
+	return c
+}

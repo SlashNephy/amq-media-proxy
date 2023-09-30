@@ -3,15 +3,12 @@ package controller
 import (
 	"log/slog"
 	"net/http"
-	"regexp"
 
 	"github.com/labstack/echo/v4"
 
 	"github.com/SlashNephy/amq-media-proxy/domain/content_type"
 	"github.com/SlashNephy/amq-media-proxy/logging"
 )
-
-var mediaURLPattern = regexp.MustCompile(`^https://\w+\.catbox\.video/\w+\.(?:mp3|webm)$`)
 
 func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 	var params struct {
@@ -22,7 +19,7 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 	}
 
 	// 不正な URL が来ないかバリデーション
-	if !mediaURLPattern.MatchString(params.URL) {
+	if !co.media.IsValidURL(params.URL) {
 		logging.FromContext(c.Request().Context()).Error("unexpected url", slog.String("url", params.URL))
 		return echo.ErrBadRequest
 	}

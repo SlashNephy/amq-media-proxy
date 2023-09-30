@@ -6,10 +6,11 @@ import (
 )
 
 type Config struct {
-	LogLevel       string `env:"LOG_LEVEL" envDefault:"info"`
-	ServerAddress  string `env:"SERVER_ADDRESS" envDefault:":8080"`
-	CacheDirectory string `env:"CACHE_DIRECTORY" envDefault:".cache"`
-	TrustRealIP    bool   `env:"TRUST_REAL_IP"`
+	LogLevel        string `env:"LOG_LEVEL" envDefault:"info"`
+	ServerAddress   string `env:"SERVER_ADDRESS" envDefault:":8080"`
+	MediaURLPattern string `env:"MEDIA_URL_PATTERN"`
+	CacheDirectory  string `env:"CACHE_DIRECTORY" envDefault:".cache"`
+	TrustRealIP     bool   `env:"TRUST_REAL_IP"`
 }
 
 // LoadConfig は環境変数から設定値を読み込む。

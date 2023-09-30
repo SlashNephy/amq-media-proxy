@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -19,19 +20,31 @@ type MediaService struct {
 	fs        fs.FileSystem
 	amqClient AMQClient
 
+	mediaURLPattern *regexp.Regexp
+
 	// downloadingMap は url をキーとしてダウンロード中であるかを記録する map。値には意味はない
 	downloadingMap map[string]struct{}
 	// downloadingMapMutex は downloadingMap にアクセスするときに使用する Mutex
 	downloadingMapMutex sync.Mutex
 }
 
-func NewMediaService(config *config.Config, fs fs.FileSystem, amqClient AMQClient) *MediaService {
-	return &MediaService{
-		config:         config,
-		fs:             fs,
-		amqClient:      amqClient,
-		downloadingMap: make(map[string]struct{}),
+func NewMediaService(config *config.Config, fs fs.FileSystem, amqClient AMQClient) (*MediaService, error) {
+	regex, err := regexp.Compile(config.MediaURLPattern)
+	if err != nil {
+		return nil, err
 	}
+
+	return &MediaService{
+		config:          config,
+		fs:              fs,
+		amqClient:       amqClient,
+		mediaURLPattern: regex,
+		downloadingMap:  make(map[string]struct{}),
+	}, nil
+}
+
+func (s *MediaService) IsValidURL(url string) bool {
+	return s.mediaURLPattern.MatchString(url)
 }
 
 func (s *MediaService) IsDownloading(url string) bool {

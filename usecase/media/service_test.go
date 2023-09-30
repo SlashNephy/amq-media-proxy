@@ -21,13 +21,14 @@ func NewTestMediaService(t *testing.T, cfg *config.Config, exists bool) (*MediaS
 	m := &MediaServiceMocks{
 		amqClient: mock_repo.NewMockAMQClient(ctrl),
 	}
-	s := NewMediaService(cfg, fs.NewFakeFileSystem(exists), m.amqClient)
+	s, err := NewMediaService(cfg, fs.NewFakeFileSystem(exists), m.amqClient)
+	require.NoError(t, err)
 	return s, m
 }
 
 func TestMediaService_IsDownloading(t *testing.T) {
 	t.Run("ダウンロード中に true が返る", func(t *testing.T) {
-		s, _ := NewTestMediaService(t, nil, false)
+		s, _ := NewTestMediaService(t, &config.Config{}, false)
 
 		s.lockDownloading("https://example.com/challenge.mp3")
 
@@ -36,7 +37,7 @@ func TestMediaService_IsDownloading(t *testing.T) {
 	})
 
 	t.Run("ダウンロード中ではないときに false が返る", func(t *testing.T) {
-		s, _ := NewTestMediaService(t, nil, false)
+		s, _ := NewTestMediaService(t, &config.Config{}, false)
 
 		actual := s.IsDownloading("https://example.com/challenge.mp3")
 		assert.False(t, actual)
