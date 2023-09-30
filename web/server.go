@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"github.com/pkg/errors"
 	"log/slog"
 	"net"
 	"net/http"
@@ -67,7 +66,6 @@ func NewServer(
 					slog.String("uri", v.URI),
 					slog.String("remote_ip", v.RemoteIP),
 					slog.Float64("latency", float64(v.Latency)/float64(time.Second)),
-					slog.Any("err", errors.WithStack(v.Error)),
 				)
 				return nil
 			},
