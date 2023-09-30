@@ -93,10 +93,13 @@ func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL string, write
 	}
 	defer cacheFile.Close()
 
-	// cacheFile と writer に同時にコピーする
-	multiWriter := io.MultiWriter(cacheFile, writer)
-	if _, err = io.Copy(multiWriter, response.Body); err != nil {
-		_ = os.Remove(cachePath)
+	var dest io.Writer = cacheFile
+	if writer != nil {
+		// writer が指定されたら cacheFile と writer に同時にコピーする
+		dest = io.MultiWriter(cacheFile, writer)
+	}
+
+	if _, err = io.Copy(dest, response.Body); err != nil {
 		return errors.WithStack(err)
 	}
 
