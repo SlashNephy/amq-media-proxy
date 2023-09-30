@@ -7,5 +7,7 @@ import (
 )
 
 func (co *Controller) HandleGetHealthcheck(c echo.Context) error {
-	return c.NoContent(http.StatusOK)
+	return c.JSON(http.StatusOK, map[string]bool{
+		"ok": true,
+	})
 }
