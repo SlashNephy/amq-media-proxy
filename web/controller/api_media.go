@@ -46,22 +46,21 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 		c.Response().WriteHeader(http.StatusOK)
 	}
 
-	// キャッシュ済みならそれを返す
-	if cachePath, ok := co.media.FindCachedMediaPath(params.URL); ok {
-		logging.FromContext(c.Request().Context()).Info("found from cache",
-			slog.String("url", params.URL),
-		)
-		return c.File(cachePath)
+	// キャッシュ済みではないならダウンロードする
+	cachePath, ok := co.media.FindCachedMediaPath(params.URL)
+	if !ok {
+		if err := co.media.DownloadMedia(c.Request().Context(), params.URL, cachePath); err != nil {
+			logging.FromContext(c.Request().Context()).Error("failed to download",
+				slog.String("url", params.URL),
+				slog.Any("err", err),
+			)
+			return echo.ErrInternalServerError
+		}
+
+		logging.FromContext(c.Request().Context()).Info("downloaded", slog.String("url", params.URL))
+	} else {
+		logging.FromContext(c.Request().Context()).Info("found from cache", slog.String("url", params.URL))
 	}
 
-	// URL をダウンロードしつつ、レスポンスに書き込む
-	if err := co.media.DownloadMedia(c.Request().Context(), params.URL, c.Response().Writer); err != nil {
-		logging.FromContext(c.Request().Context()).Error("failed to download",
-			slog.String("url", params.URL),
-			slog.Any("err", err),
-		)
-		return echo.ErrInternalServerError
-	}
-
-	return nil
+	return c.File(cachePath)
 }
