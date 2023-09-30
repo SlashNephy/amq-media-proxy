@@ -31,7 +31,7 @@ func InitializeServer(ctx context.Context) (*web.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	controllerController := controller.NewController(mediaService)
+	controllerController := controller.NewController(mediaService, configConfig)
 	slogLogger, err := logging.NewLogger(configConfig)
 	if err != nil {
 		return nil, err

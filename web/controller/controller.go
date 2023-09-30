@@ -3,16 +3,19 @@ package controller
 import (
 	"github.com/labstack/echo/v4"
 
+	"github.com/SlashNephy/amq-media-proxy/config"
 	"github.com/SlashNephy/amq-media-proxy/usecase/media"
 )
 
 type Controller struct {
-	media media.MediaUsecase
+	media  media.MediaUsecase
+	config *config.Config
 }
 
-func NewController(media media.MediaUsecase) *Controller {
+func NewController(media media.MediaUsecase, config *config.Config) *Controller {
 	return &Controller{
-		media: media,
+		media:  media,
+		config: config,
 	}
 }
 

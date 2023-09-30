@@ -19,9 +19,13 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 		return err
 	}
 
+	// リファラーチェック
+	if c.Request().Referer() != co.config.ValidReferer {
+		return echo.ErrBadRequest
+	}
+
 	// 不正な URL が来ないかバリデーション
 	if !co.media.IsValidURL(params.URL) {
-		logging.FromContext(c.Request().Context()).Error("unexpected url", slog.String("url", params.URL))
 		return echo.ErrBadRequest
 	}
 

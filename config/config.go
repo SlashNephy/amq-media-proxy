@@ -11,6 +11,7 @@ type Config struct {
 	MediaURLPattern   string `env:"MEDIA_URL_PATTERN"`
 	CacheDirectory    string `env:"CACHE_DIRECTORY" envDefault:".cache"`
 	TrustRealIP       bool   `env:"TRUST_REAL_IP"`
+	ValidReferer      string `env:"VALID_REFERER"`
 	QuestionsJSONPath string `env:"QUESTIONS_JSON_PATH"`
 }
 
