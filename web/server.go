@@ -41,6 +41,14 @@ func NewServer(
 			},
 		),
 		middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+			Skipper: func(c echo.Context) bool {
+				// ヘルスチェックはログしない
+				if c.Request().RequestURI == "/healthcheck" {
+					return true
+				}
+
+				return false
+			},
 			LogURI:     true,
 			LogStatus:  true,
 			LogLatency: true,
