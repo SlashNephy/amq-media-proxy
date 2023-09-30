@@ -19,6 +19,7 @@ jobs:
       contents: 'read'
     with:
       command: 'make build'
+      post-command: 'make test'
 
   lint:
     uses: SlashNephy/.github/.github/workflows/go-lint.yml@master
