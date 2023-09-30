@@ -1,8 +1,14 @@
 build:
 	go build ./cmd/server
 
+build-batch-download:
+	go build ./cmd/batch-download
+
 start:
 	go run ./cmd/server
+
+start-batch-download:
+	go run ./cmd/batch-download
 
 dev:
 	go run github.com/cosmtrek/air

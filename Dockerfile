@@ -6,7 +6,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY ./ ./
-RUN make build
+RUN make build && make build-batch-download
 
 FROM debian:bullseye-slim@sha256:c618be84fc82aa8ba203abbb07218410b0f5b3c7cb6b4e7248fda7785d4f9946
 WORKDIR /app
@@ -21,4 +21,5 @@ RUN groupadd -g 1000 app && useradd -u 1000 -g app app
 
 USER app
 COPY --from=build /app/server ./
+COPY --from=build /app/batch-download ./
 CMD ["./server"]
