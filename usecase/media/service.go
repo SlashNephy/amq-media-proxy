@@ -56,10 +56,15 @@ func (s *MediaService) IsDownloading(url string) bool {
 }
 
 func (s *MediaService) getCachePath(mediaURL string) string {
+	// キャッシュディレクトリを作成
+	if err := os.MkdirAll(s.config.CacheDirectory, os.ModePerm); err != nil {
+		panic(err)
+	}
+
 	filename := filepath.Base(mediaURL)
 	path := filepath.Join(s.config.CacheDirectory, filename)
-
-	return strings.ReplaceAll(path, string(filepath.Separator), "/")
+	path = strings.ReplaceAll(path, string(filepath.Separator), "/")
+	return path
 }
 
 func (s *MediaService) FindCachedMediaPath(mediaURL string) (string, bool) {
@@ -68,10 +73,10 @@ func (s *MediaService) FindCachedMediaPath(mediaURL string) (string, bool) {
 		return cachePath, true
 	}
 
-	return "", false
+	return cachePath, false
 }
 
-func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL string, writer io.Writer) error {
+func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL, cachePath string) error {
 	s.lockDownloading(mediaURL)
 	defer s.unlockDownloading(mediaURL)
 
@@ -79,31 +84,25 @@ func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL string, write
 	if err != nil {
 		return errors.WithStack(err)
 	}
-
-	// キャッシュディレクトリを作成
-	cachePath := s.getCachePath(mediaURL)
-	if err = os.MkdirAll(filepath.Dir(cachePath), os.ModePerm); err != nil {
-		return errors.WithStack(err)
-	}
+	defer response.Body.Close()
 
 	// キャッシュファイルを作成
-	cacheFile, err := os.Create(cachePath)
+	tmpCachePath := cachePath + ".tmp"
+	cacheFile, err := os.Create(tmpCachePath)
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer cacheFile.Close()
+	defer os.Remove(tmpCachePath)
 
-	var dest io.Writer = cacheFile
-	if writer != nil {
-		// writer が指定されたら cacheFile と writer に同時にコピーする
-		dest = io.MultiWriter(cacheFile, writer)
-	}
-
-	if _, err = io.Copy(dest, response.Body); err != nil {
+	if _, err = io.Copy(cacheFile, response.Body); err != nil {
 		return errors.WithStack(err)
 	}
 
-	return nil
+	if err = cacheFile.Close(); err != nil {
+		return errors.WithStack(err)
+	}
+
+	return os.Rename(tmpCachePath, cachePath)
 }
 
 func (s *MediaService) lockDownloading(url string) {

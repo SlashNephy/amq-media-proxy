@@ -10,7 +10,6 @@ package mock_usecase
 
 import (
 	context "context"
-	io "io"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"
@@ -40,7 +39,7 @@ func (m *MockMediaUsecase) EXPECT() *MockMediaUsecaseMockRecorder {
 }
 
 // DownloadMedia mocks base method.
-func (m *MockMediaUsecase) DownloadMedia(arg0 context.Context, arg1 string, arg2 io.Writer) error {
+func (m *MockMediaUsecase) DownloadMedia(arg0 context.Context, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DownloadMedia", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -66,13 +65,13 @@ func (c *MediaUsecaseDownloadMediaCall) Return(arg0 error) *MediaUsecaseDownload
 }
 
 // Do rewrite *gomock.Call.Do
-func (c *MediaUsecaseDownloadMediaCall) Do(f func(context.Context, string, io.Writer) error) *MediaUsecaseDownloadMediaCall {
+func (c *MediaUsecaseDownloadMediaCall) Do(f func(context.Context, string, string) error) *MediaUsecaseDownloadMediaCall {
 	c.Call = c.Call.Do(f)
 	return c
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MediaUsecaseDownloadMediaCall) DoAndReturn(f func(context.Context, string, io.Writer) error) *MediaUsecaseDownloadMediaCall {
+func (c *MediaUsecaseDownloadMediaCall) DoAndReturn(f func(context.Context, string, string) error) *MediaUsecaseDownloadMediaCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }
