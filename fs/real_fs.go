@@ -1,6 +1,10 @@
 package fs
 
-import "os"
+import (
+	"os"
+
+	"github.com/pkg/errors"
+)
 
 // RealFileSystem は実際のファイルシステムにアクセスする FileSystem 実装。
 type RealFileSystem struct {
@@ -11,7 +15,7 @@ func NewRealFileSystem() *RealFileSystem {
 	return &RealFileSystem{
 		existsFn: func(path string) (bool, error) {
 			_, err := os.Stat(path)
-			return os.IsExist(err), err
+			return os.IsExist(err), errors.WithStack(err)
 		},
 	}
 }

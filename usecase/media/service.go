@@ -3,15 +3,15 @@ package media
 import (
 	"context"
 	"io"
-	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 
+	"github.com/pkg/errors"
+
 	"github.com/SlashNephy/amq-media-proxy/config"
 	"github.com/SlashNephy/amq-media-proxy/fs"
-	"github.com/SlashNephy/amq-media-proxy/logging"
 )
 
 type MediaService struct {
@@ -64,18 +64,19 @@ func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL string, write
 
 	response, err := s.amqClient.FetchMedia(ctx, mediaURL)
 	if err != nil {
-		logging.FromContext(ctx).Info("failed to download url", slog.String("url", mediaURL))
-		return err
+		return errors.WithStack(err)
 	}
 
-	// キャッシュファイル
+	// キャッシュディレクトリを作成
 	cachePath := s.getCachePath(mediaURL)
 	if err = os.MkdirAll(filepath.Dir(cachePath), os.ModePerm); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
+
+	// キャッシュファイルを作成
 	cacheFile, err := os.Create(cachePath)
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	defer cacheFile.Close()
 
@@ -83,7 +84,7 @@ func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL string, write
 	multiWriter := io.MultiWriter(cacheFile, writer)
 	if _, err = io.Copy(multiWriter, response.Body); err != nil {
 		_ = os.Remove(cachePath)
-		return err
+		return errors.WithStack(err)
 	}
 
 	return nil

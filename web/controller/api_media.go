@@ -6,7 +6,6 @@ import (
 	"regexp"
 
 	"github.com/labstack/echo/v4"
-	"github.com/pkg/errors"
 
 	"github.com/SlashNephy/amq-media-proxy/domain/content_type"
 	"github.com/SlashNephy/amq-media-proxy/logging"
@@ -40,7 +39,7 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 		if err != nil {
 			logging.FromContext(c.Request().Context()).Error("unexpected content type",
 				slog.String("url", params.URL),
-				slog.Any("err", errors.WithStack(err)),
+				slog.Any("err", err),
 			)
 			return echo.ErrBadRequest
 		}
@@ -62,7 +61,7 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 	if err := co.media.DownloadMedia(c.Request().Context(), params.URL, c.Response().Writer); err != nil {
 		logging.FromContext(c.Request().Context()).Error("failed to download",
 			slog.String("url", params.URL),
-			slog.Any("err", errors.WithStack(err)),
+			slog.Any("err", err),
 		)
 		return echo.ErrInternalServerError
 	}
