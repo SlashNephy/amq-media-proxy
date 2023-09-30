@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 
@@ -24,13 +25,10 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	// ダウンロード中ならリダイレクトする
-	if co.media.IsDownloading(params.URL) {
-		return c.Redirect(http.StatusFound, params.URL)
-	}
+	// キャッシュ済みならファイルを送信する
+	if cachePath, ok := co.media.FindCachedMediaPath(params.URL); ok {
+		logging.FromContext(c.Request().Context()).Info("found from cache", slog.String("url", params.URL))
 
-	// HTTP ヘッダーを書き込む
-	{
 		// MIME Type を判定する
 		contentType, err := content_type.DetectContentTypeByFilename(params.URL)
 		if err != nil {
@@ -41,26 +39,25 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 			return echo.ErrBadRequest
 		}
 
+		// HTTP ヘッダーを書き込む
 		c.Response().Header().Set("Content-Type", string(contentType))
 		c.Response().Header().Set("Cache-Control", "public, immutable, max-age=2592000, stale-if-error=604800, stale-while-revalidate=604800")
 		c.Response().WriteHeader(http.StatusOK)
+		return c.File(cachePath)
 	}
 
-	// キャッシュ済みではないならダウンロードする
-	cachePath, ok := co.media.FindCachedMediaPath(params.URL)
-	if !ok {
-		if err := co.media.DownloadMedia(c.Request().Context(), params.URL, cachePath); err != nil {
-			logging.FromContext(c.Request().Context()).Error("failed to download",
-				slog.String("url", params.URL),
+	// ダウンロード
+	go func(ctx context.Context, url string) {
+		if err := co.media.DownloadMedia(ctx, url); err != nil {
+			logging.FromContext(ctx).Error("failed to download",
+				slog.String("url", url),
 				slog.Any("err", err),
 			)
-			return echo.ErrInternalServerError
+		} else {
+			logging.FromContext(ctx).Info("downloaded", slog.String("url", url))
 		}
+	}(context.WithoutCancel(c.Request().Context()), params.URL)
 
-		logging.FromContext(c.Request().Context()).Info("downloaded", slog.String("url", params.URL))
-	} else {
-		logging.FromContext(c.Request().Context()).Info("found from cache", slog.String("url", params.URL))
-	}
-
-	return c.File(cachePath)
+	// リダイレクト
+	return c.Redirect(http.StatusFound, params.URL)
 }

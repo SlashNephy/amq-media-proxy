@@ -39,17 +39,17 @@ func (m *MockMediaUsecase) EXPECT() *MockMediaUsecaseMockRecorder {
 }
 
 // DownloadMedia mocks base method.
-func (m *MockMediaUsecase) DownloadMedia(arg0 context.Context, arg1, arg2 string) error {
+func (m *MockMediaUsecase) DownloadMedia(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DownloadMedia", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "DownloadMedia", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DownloadMedia indicates an expected call of DownloadMedia.
-func (mr *MockMediaUsecaseMockRecorder) DownloadMedia(arg0, arg1, arg2 any) *MediaUsecaseDownloadMediaCall {
+func (mr *MockMediaUsecaseMockRecorder) DownloadMedia(arg0, arg1 any) *MediaUsecaseDownloadMediaCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DownloadMedia", reflect.TypeOf((*MockMediaUsecase)(nil).DownloadMedia), arg0, arg1, arg2)
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DownloadMedia", reflect.TypeOf((*MockMediaUsecase)(nil).DownloadMedia), arg0, arg1)
 	return &MediaUsecaseDownloadMediaCall{Call: call}
 }
 
@@ -65,13 +65,13 @@ func (c *MediaUsecaseDownloadMediaCall) Return(arg0 error) *MediaUsecaseDownload
 }
 
 // Do rewrite *gomock.Call.Do
-func (c *MediaUsecaseDownloadMediaCall) Do(f func(context.Context, string, string) error) *MediaUsecaseDownloadMediaCall {
+func (c *MediaUsecaseDownloadMediaCall) Do(f func(context.Context, string) error) *MediaUsecaseDownloadMediaCall {
 	c.Call = c.Call.Do(f)
 	return c
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MediaUsecaseDownloadMediaCall) DoAndReturn(f func(context.Context, string, string) error) *MediaUsecaseDownloadMediaCall {
+func (c *MediaUsecaseDownloadMediaCall) DoAndReturn(f func(context.Context, string) error) *MediaUsecaseDownloadMediaCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }
@@ -111,44 +111,6 @@ func (c *MediaUsecaseFindCachedMediaPathCall) Do(f func(string) (string, bool)) 
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
 func (c *MediaUsecaseFindCachedMediaPathCall) DoAndReturn(f func(string) (string, bool)) *MediaUsecaseFindCachedMediaPathCall {
-	c.Call = c.Call.DoAndReturn(f)
-	return c
-}
-
-// IsDownloading mocks base method.
-func (m *MockMediaUsecase) IsDownloading(arg0 string) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsDownloading", arg0)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// IsDownloading indicates an expected call of IsDownloading.
-func (mr *MockMediaUsecaseMockRecorder) IsDownloading(arg0 any) *MediaUsecaseIsDownloadingCall {
-	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsDownloading", reflect.TypeOf((*MockMediaUsecase)(nil).IsDownloading), arg0)
-	return &MediaUsecaseIsDownloadingCall{Call: call}
-}
-
-// MediaUsecaseIsDownloadingCall wrap *gomock.Call
-type MediaUsecaseIsDownloadingCall struct {
-	*gomock.Call
-}
-
-// Return rewrite *gomock.Call.Return
-func (c *MediaUsecaseIsDownloadingCall) Return(arg0 bool) *MediaUsecaseIsDownloadingCall {
-	c.Call = c.Call.Return(arg0)
-	return c
-}
-
-// Do rewrite *gomock.Call.Do
-func (c *MediaUsecaseIsDownloadingCall) Do(f func(string) bool) *MediaUsecaseIsDownloadingCall {
-	c.Call = c.Call.Do(f)
-	return c
-}
-
-// DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c *MediaUsecaseIsDownloadingCall) DoAndReturn(f func(string) bool) *MediaUsecaseIsDownloadingCall {
 	c.Call = c.Call.DoAndReturn(f)
 	return c
 }

@@ -2,7 +2,9 @@ package media
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -47,14 +49,6 @@ func (s *MediaService) IsValidURL(url string) bool {
 	return s.mediaURLPattern.MatchString(url)
 }
 
-func (s *MediaService) IsDownloading(url string) bool {
-	s.downloadingMapMutex.Lock()
-	defer s.downloadingMapMutex.Unlock()
-
-	_, ok := s.downloadingMap[url]
-	return ok
-}
-
 func (s *MediaService) getCachePath(mediaURL string) string {
 	// キャッシュディレクトリを作成
 	if err := os.MkdirAll(s.config.CacheDirectory, os.ModePerm); err != nil {
@@ -76,7 +70,12 @@ func (s *MediaService) FindCachedMediaPath(mediaURL string) (string, bool) {
 	return cachePath, false
 }
 
-func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL, cachePath string) error {
+func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL string) error {
+	// すでにダウンロード中なら何もしない
+	if s.isDownloading(mediaURL) {
+		return nil
+	}
+
 	s.lockDownloading(mediaURL)
 	defer s.unlockDownloading(mediaURL)
 
@@ -86,8 +85,20 @@ func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL, cachePath st
 	}
 	defer response.Body.Close()
 
-	// キャッシュファイルを作成
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("invalid response, %d", response.StatusCode)
+	}
+
+	// tmpCachePath が存在していたら削除
+	cachePath := s.getCachePath(mediaURL)
 	tmpCachePath := cachePath + ".tmp"
+	if ok, _ := s.fs.Exists(tmpCachePath); ok {
+		if err = os.Remove(tmpCachePath); err != nil {
+			return errors.WithStack(err)
+		}
+	}
+
+	// キャッシュファイルを作成
 	cacheFile, err := os.Create(tmpCachePath)
 	if err != nil {
 		return errors.WithStack(err)
@@ -103,6 +114,14 @@ func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL, cachePath st
 	}
 
 	return os.Rename(tmpCachePath, cachePath)
+}
+
+func (s *MediaService) isDownloading(url string) bool {
+	s.downloadingMapMutex.Lock()
+	defer s.downloadingMapMutex.Unlock()
+
+	_, ok := s.downloadingMap[url]
+	return ok
 }
 
 func (s *MediaService) lockDownloading(url string) {
