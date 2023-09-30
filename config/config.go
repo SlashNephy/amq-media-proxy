@@ -13,7 +13,6 @@ type Config struct {
 	TrustRealIP       bool   `env:"TRUST_REAL_IP"`
 	ValidReferer      string `env:"VALID_REFERER"`
 	QuestionsJSONPath string `env:"QUESTIONS_JSON_PATH"`
-	LogDownloader     bool   `env:"LOG_DOWNLOADER"`
 }
 
 // LoadConfig は環境変数から設定値を読み込む。

@@ -37,10 +37,9 @@ func main() {
 		panic(err)
 	}
 
-	downloader := NewDownloader(logging.WithContext(ctx, logger), media, 3, cfg.LogDownloader)
+	downloader := NewDownloader(logging.WithContext(ctx, logger), media, 3)
 	downloader.QueueDownload(urls)
-
-	if err := downloader.Wait(); err != nil {
+	if err = downloader.Wait(); err != nil {
 		panic(err)
 	}
 }
