@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/pkg/errors"
 	"log/slog"
+	"net"
 	"net/http"
 	"time"
 
@@ -28,7 +29,11 @@ func NewServer(
 ) *Server {
 	e := echo.New()
 	e.HideBanner = true
-	e.IPExtractor = echo.ExtractIPFromRealIPHeader()
+	if config.TrustRealIP {
+		_, ipV4, _ := net.ParseCIDR("0.0.0.0/0")
+		_, ipV6, _ := net.ParseCIDR("0:0:0:0:0:0:0:0/0")
+		e.IPExtractor = echo.ExtractIPFromRealIPHeader(echo.TrustIPRange(ipV4), echo.TrustIPRange(ipV6))
+	}
 	e.Use(
 		middleware.RequestID(),
 		loggerMiddleware.Process,
@@ -49,17 +54,18 @@ func NewServer(
 
 				return false
 			},
-			LogURI:     true,
-			LogStatus:  true,
-			LogLatency: true,
-			LogMethod:  true,
+			LogURI:      true,
+			LogStatus:   true,
+			LogLatency:  true,
+			LogMethod:   true,
+			LogRemoteIP: true,
 			LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
 				logger := logging.FromContext(c.Request().Context())
 				logger.InfoContext(c.Request().Context(), "request",
 					slog.Int("status", v.Status),
 					slog.String("method", v.Method),
 					slog.String("uri", v.URI),
-					slog.String("remote_ip", c.RealIP()),
+					slog.String("remote_ip", v.RemoteIP),
 					slog.Float64("latency", float64(v.Latency)/float64(time.Second)),
 					slog.Any("err", errors.WithStack(v.Error)),
 				)
