@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/SlashNephy/amq-media-proxy/config"
 	"github.com/SlashNephy/amq-media-proxy/fs"
@@ -17,14 +18,28 @@ type MediaService struct {
 	config    *config.Config
 	fs        fs.FileSystem
 	amqClient AMQClient
+
+	// downloadingMap は url をキーとしてダウンロード中であるかを記録する map。値には意味はない
+	downloadingMap map[string]struct{}
+	// downloadingMapMutex は downloadingMap にアクセスするときに使用する Mutex
+	downloadingMapMutex sync.Mutex
 }
 
 func NewMediaService(config *config.Config, fs fs.FileSystem, amqClient AMQClient) *MediaService {
 	return &MediaService{
-		config:    config,
-		fs:        fs,
-		amqClient: amqClient,
+		config:         config,
+		fs:             fs,
+		amqClient:      amqClient,
+		downloadingMap: make(map[string]struct{}),
 	}
+}
+
+func (s *MediaService) IsDownloading(url string) bool {
+	s.downloadingMapMutex.Lock()
+	defer s.downloadingMapMutex.Unlock()
+
+	_, ok := s.downloadingMap[url]
+	return ok
 }
 
 func (s *MediaService) getCachePath(mediaURL string) string {
@@ -34,10 +49,9 @@ func (s *MediaService) getCachePath(mediaURL string) string {
 	return strings.ReplaceAll(path, string(filepath.Separator), "/")
 }
 
-func (s *MediaService) FindCachedMediaPath(ctx context.Context, mediaURL string) (string, bool) {
+func (s *MediaService) FindCachedMediaPath(mediaURL string) (string, bool) {
 	cachePath := s.getCachePath(mediaURL)
 	if ok, _ := s.fs.Exists(cachePath); ok {
-		logging.FromContext(ctx).Info("found from cache", slog.String("url", mediaURL))
 		return cachePath, true
 	}
 
@@ -45,6 +59,9 @@ func (s *MediaService) FindCachedMediaPath(ctx context.Context, mediaURL string)
 }
 
 func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL string, writer io.Writer) error {
+	s.lockDownloading(mediaURL)
+	defer s.unlockDownloading(mediaURL)
+
 	response, err := s.amqClient.FetchMedia(ctx, mediaURL)
 	if err != nil {
 		logging.FromContext(ctx).Info("failed to download url", slog.String("url", mediaURL))
@@ -70,6 +87,20 @@ func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL string, write
 	}
 
 	return nil
+}
+
+func (s *MediaService) lockDownloading(url string) {
+	s.downloadingMapMutex.Lock()
+	defer s.downloadingMapMutex.Unlock()
+
+	s.downloadingMap[url] = struct{}{}
+}
+
+func (s *MediaService) unlockDownloading(url string) {
+	s.downloadingMapMutex.Lock()
+	defer s.downloadingMapMutex.Unlock()
+
+	delete(s.downloadingMap, url)
 }
 
 var _ MediaUsecase = (*MediaService)(nil)

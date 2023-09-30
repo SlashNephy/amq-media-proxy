@@ -4,7 +4,6 @@ import (
 	"log/slog"
 	"net/http"
 	"regexp"
-	"sync"
 
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
@@ -13,11 +12,7 @@ import (
 	"github.com/SlashNephy/amq-media-proxy/logging"
 )
 
-var (
-	mediaURLPattern     = regexp.MustCompile(`^https://\w+\.catbox\.video/\w+\.(?:mp3|webm)$`)
-	downloadingMap      = make(map[string]struct{})
-	downloadingMapMutex sync.Mutex
-)
+var mediaURLPattern = regexp.MustCompile(`^https://\w+\.catbox\.video/\w+\.(?:mp3|webm)$`)
 
 func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 	var params struct {
@@ -33,44 +28,44 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	// MIME Type を判定する
-	contentType, err := content_type.DetectContentTypeByFilename(params.URL)
-	if err != nil {
-		logging.FromContext(c.Request().Context()).Error("unexpected content type", slog.String("url", params.URL))
-		return echo.ErrBadRequest
-	}
-
 	// ダウンロード中ならリダイレクトする
-	downloadingMapMutex.Lock()
-	if _, ok := downloadingMap[params.URL]; ok {
-		downloadingMapMutex.Unlock()
+	if co.media.IsDownloading(params.URL) {
 		return c.Redirect(http.StatusFound, params.URL)
-	}
-	downloadingMap[params.URL] = struct{}{}
-	downloadingMapMutex.Unlock()
-
-	// キャッシュ済みならそれを返す
-	cachePath, ok := co.media.FindCachedMediaPath(c.Request().Context(), params.URL)
-	if ok {
-		return c.File(cachePath)
 	}
 
 	// HTTP ヘッダーを書き込む
-	c.Response().Header().Set("Content-Type", string(contentType))
-	c.Response().Header().Set("Cache-Control", "public, immutable, max-age=2592000, stale-if-error=604800, stale-while-revalidate=604800")
-	c.Response().WriteHeader(http.StatusOK)
+	{
+		// MIME Type を判定する
+		contentType, err := content_type.DetectContentTypeByFilename(params.URL)
+		if err != nil {
+			logging.FromContext(c.Request().Context()).Error("unexpected content type",
+				slog.String("url", params.URL),
+				slog.Any("err", errors.WithStack(err)),
+			)
+			return echo.ErrBadRequest
+		}
+
+		c.Response().Header().Set("Content-Type", string(contentType))
+		c.Response().Header().Set("Cache-Control", "public, immutable, max-age=2592000, stale-if-error=604800, stale-while-revalidate=604800")
+		c.Response().WriteHeader(http.StatusOK)
+	}
+
+	// キャッシュ済みならそれを返す
+	if cachePath, ok := co.media.FindCachedMediaPath(params.URL); ok {
+		logging.FromContext(c.Request().Context()).Info("found from cache",
+			slog.String("url", params.URL),
+		)
+		return c.File(cachePath)
+	}
 
 	// URL をダウンロードしつつ、レスポンスに書き込む
-	err = co.media.DownloadMedia(c.Request().Context(), params.URL, c.Response().Writer)
-
-	// ダウンロードが終わった
-	downloadingMapMutex.Lock()
-	delete(downloadingMap, params.URL)
-	downloadingMapMutex.Unlock()
-
-	if err != nil {
-		logging.FromContext(c.Request().Context()).Error("failed to download", slog.String("url", params.URL), slog.Any("err", errors.WithStack(err)))
+	if err := co.media.DownloadMedia(c.Request().Context(), params.URL, c.Response().Writer); err != nil {
+		logging.FromContext(c.Request().Context()).Error("failed to download",
+			slog.String("url", params.URL),
+			slog.Any("err", errors.WithStack(err)),
+		)
 		return echo.ErrInternalServerError
 	}
+
 	return nil
 }

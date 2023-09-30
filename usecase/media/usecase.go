@@ -7,7 +7,8 @@ import (
 )
 
 type MediaUsecase interface {
-	FindCachedMediaPath(ctx context.Context, mediaURL string) (string, bool)
+	IsDownloading(url string) bool
+	FindCachedMediaPath(mediaURL string) (string, bool)
 	DownloadMedia(ctx context.Context, mediaURL string, writer io.Writer) error
 }
 
