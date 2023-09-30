@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/SlashNephy/amq-media-proxy/logging"
 	"os"
 	"os/signal"
 	"syscall"
@@ -21,6 +22,11 @@ func main() {
 		panic(err)
 	}
 
+	logger, err := logging.NewLogger(cfg)
+	if err != nil {
+		panic(err)
+	}
+
 	urls, err := LoadMediaURLs(cfg.QuestionsJSONPath)
 	if err != nil {
 		panic(err)
@@ -31,7 +37,7 @@ func main() {
 		panic(err)
 	}
 
-	downloader := NewDownloader(ctx, media, 3)
+	downloader := NewDownloader(logging.WithContext(ctx, logger), media, 3, cfg.LogDownloader)
 	downloader.QueueDownload(urls)
 
 	if err := downloader.Wait(); err != nil {

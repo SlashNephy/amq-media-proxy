@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/schollz/progressbar/v3"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/SlashNephy/amq-media-proxy/logging"
 	"github.com/SlashNephy/amq-media-proxy/usecase/media"
 )
 
@@ -17,9 +19,10 @@ type Downloader struct {
 	eg    *errgroup.Group
 	ctx   context.Context
 	bar   *progressbar.ProgressBar
+	log   bool
 }
 
-func NewDownloader(ctx context.Context, media media.MediaUsecase, limit int) *Downloader {
+func NewDownloader(ctx context.Context, media media.MediaUsecase, limit int, log bool) *Downloader {
 	eg, egctx := errgroup.WithContext(ctx)
 	eg.SetLimit(limit)
 
@@ -28,6 +31,7 @@ func NewDownloader(ctx context.Context, media media.MediaUsecase, limit int) *Do
 		eg:    eg,
 		ctx:   egctx,
 		bar:   progressbar.Default(-1),
+		log:   log,
 	}
 }
 
@@ -59,6 +63,10 @@ func (d *Downloader) download(url string) error {
 
 	if err := d.media.DownloadMedia(context.WithoutCancel(d.ctx), url); err != nil {
 		return fmt.Errorf("failed to download %s: %w", url, errors.WithStack(err))
+	}
+
+	if d.log {
+		logging.FromContext(d.ctx).Info("downloaded", slog.String("url", url))
 	}
 
 	time.Sleep(1 * time.Second)
