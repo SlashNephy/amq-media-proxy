@@ -14,8 +14,15 @@ type RealFileSystem struct {
 func NewRealFileSystem() *RealFileSystem {
 	return &RealFileSystem{
 		existsFn: func(path string) (bool, error) {
-			_, err := os.Stat(path)
-			return os.IsExist(err), errors.WithStack(err)
+			if _, err := os.Stat(path); err != nil {
+				if os.IsNotExist(err) {
+					return false, nil
+				}
+
+				return false, errors.WithStack(err)
+			}
+
+			return true, nil
 		},
 	}
 }
