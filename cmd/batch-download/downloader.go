@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
+	"log/slog"
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/schollz/progressbar/v3"
 	"golang.org/x/sync/errgroup"
 
+	"github.com/SlashNephy/amq-media-proxy/logging"
 	"github.com/SlashNephy/amq-media-proxy/usecase/media"
 )
 
@@ -17,7 +17,6 @@ type Downloader struct {
 	media media.MediaUsecase
 	eg    *errgroup.Group
 	ctx   context.Context
-	bar   *progressbar.ProgressBar
 }
 
 func NewDownloader(ctx context.Context, media media.MediaUsecase, limit int) *Downloader {
@@ -28,29 +27,24 @@ func NewDownloader(ctx context.Context, media media.MediaUsecase, limit int) *Do
 		media: media,
 		eg:    eg,
 		ctx:   egctx,
-		bar:   progressbar.NewOptions(1, progressbar.OptionSetDescription("downloading"), progressbar.OptionSetWriter(os.Stdout)),
 	}
 }
 
 func (d *Downloader) QueueDownload(urls []string) {
-	d.bar.ChangeMax(len(urls))
-
-	for _, url := range urls {
+	total := len(urls)
+	for i, url := range urls {
+		current := i
 		u := url
 		d.eg.Go(func() error {
-			return d.download(u)
+			return d.download(u, current, total)
 		})
 	}
 }
 
-func (d *Downloader) download(url string) error {
+func (d *Downloader) download(url string, current, total int) error {
 	// キャンセルされていたら直ちに終了
 	if errors.Is(d.ctx.Err(), context.Canceled) {
 		return nil
-	}
-
-	if err := d.bar.Add(1); err != nil {
-		return err
 	}
 
 	// キャッシュがあったらスキップ
@@ -61,6 +55,12 @@ func (d *Downloader) download(url string) error {
 	if err := d.media.DownloadMedia(context.WithoutCancel(d.ctx), url); err != nil {
 		return fmt.Errorf("failed to download %s: %w", url, errors.WithStack(err))
 	}
+
+	logging.FromContext(d.ctx).Info("downloaded",
+		slog.String("url", url),
+		slog.Int("current", current),
+		slog.Int("total", total),
+	)
 
 	time.Sleep(1 * time.Second)
 	return nil

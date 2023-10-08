@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
-	"github.com/SlashNephy/amq-media-proxy/logging"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/SlashNephy/amq-media-proxy/config"
 	"github.com/SlashNephy/amq-media-proxy/fs"
+	"github.com/SlashNephy/amq-media-proxy/logging"
 	"github.com/SlashNephy/amq-media-proxy/repository/external/amq"
 	"github.com/SlashNephy/amq-media-proxy/usecase/media"
 )
