@@ -37,13 +37,19 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 
 	// キャッシュ済みならファイルを送信する
 	if cachePath, ok := co.media.FindCachedMediaPath(params.URL); ok {
-		logging.FromContext(c.Request().Context()).Info("found from cache", slog.String("url", params.URL))
+		logging.FromContext(c.Request().Context()).Info("found from cache",
+			slog.String("url", params.URL),
+			slog.String("user_id", visitor.ID),
+			slog.String("username", visitor.Username),
+		)
 
 		// MIME Type を判定する
 		contentType, err := content_type.DetectContentTypeByFilename(params.URL)
 		if err != nil {
 			logging.FromContext(c.Request().Context()).Error("unexpected content type",
 				slog.String("url", params.URL),
+				slog.String("user_id", visitor.ID),
+				slog.String("username", visitor.Username),
 				slog.Any("err", err),
 			)
 			return echo.ErrBadRequest
@@ -69,5 +75,10 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 	}(context.WithoutCancel(c.Request().Context()), params.URL)
 
 	// リダイレクト
+	logging.FromContext(c.Request().Context()).Info("redirected",
+		slog.String("url", params.URL),
+		slog.String("user_id", visitor.ID),
+		slog.String("username", visitor.Username),
+	)
 	return c.Redirect(http.StatusFound, params.URL)
 }
