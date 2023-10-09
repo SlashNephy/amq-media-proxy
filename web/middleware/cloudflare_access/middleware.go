@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/SlashNephy/amq-media-proxy/config"
+	"github.com/SlashNephy/amq-media-proxy/domain/entity"
 	"github.com/SlashNephy/amq-media-proxy/logging"
 )
 
@@ -52,7 +53,18 @@ func (m *Middleware) Process(next echo.HandlerFunc) echo.HandlerFunc {
 			return next(c)
 		}
 
-		c.Set(contextKey, idToken)
+		var claims struct {
+			ID                string `json:"id"`
+			PreferredUsername string `json:"preferred_username"`
+		}
+		if err = idToken.Claims(&claims); err != nil {
+			return next(c)
+		}
+
+		c.Set(contextKey, &entity.User{
+			ID:       claims.ID,
+			Username: claims.PreferredUsername,
+		})
 		return next(c)
 	}
 }

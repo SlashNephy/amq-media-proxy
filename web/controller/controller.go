@@ -31,4 +31,5 @@ func (co *Controller) RegisterRoutes(e *echo.Echo) {
 
 	api := e.Group("/api", co.cloudflareAccessMiddleware.Process)
 	api.GET("/media", co.HandleGetApiMedia)
+	api.GET("/user", co.handleGetApiUser)
 }
