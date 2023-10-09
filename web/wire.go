@@ -4,7 +4,6 @@ import (
 	"github.com/google/wire"
 
 	"github.com/SlashNephy/amq-media-proxy/web/controller"
-	cloudflareAccess "github.com/SlashNephy/amq-media-proxy/web/middleware/cloudflare_access"
 	"github.com/SlashNephy/amq-media-proxy/web/middleware/logger"
 )
 
@@ -12,5 +11,4 @@ var Set = wire.NewSet(
 	NewServer,
 	controller.NewController,
 	logger.NewMiddleware,
-	cloudflareAccess.NewMiddleware,
 )

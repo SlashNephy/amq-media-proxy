@@ -9,15 +9,9 @@ import (
 
 	"github.com/SlashNephy/amq-media-proxy/domain/content_type"
 	"github.com/SlashNephy/amq-media-proxy/logging"
-	cloudflareAccess "github.com/SlashNephy/amq-media-proxy/web/middleware/cloudflare_access"
 )
 
 func (co *Controller) HandleGetApiMedia(c echo.Context) error {
-	visitor := cloudflareAccess.GetVisitor(c)
-	if visitor == nil {
-		return echo.ErrUnauthorized
-	}
-
 	var params struct {
 		URL string `query:"u"`
 	}
@@ -37,19 +31,13 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 
 	// キャッシュ済みならファイルを送信する
 	if cachePath, ok := co.media.FindCachedMediaPath(params.URL); ok {
-		logging.FromContext(c.Request().Context()).Info("found from cache",
-			slog.String("url", params.URL),
-			slog.String("user_id", visitor.ID),
-			slog.String("username", visitor.Username),
-		)
+		logging.FromContext(c.Request().Context()).Info("found from cache", slog.String("url", params.URL))
 
 		// MIME Type を判定する
 		contentType, err := content_type.DetectContentTypeByFilename(params.URL)
 		if err != nil {
 			logging.FromContext(c.Request().Context()).Error("unexpected content type",
 				slog.String("url", params.URL),
-				slog.String("user_id", visitor.ID),
-				slog.String("username", visitor.Username),
 				slog.Any("err", err),
 			)
 			return echo.ErrBadRequest
@@ -75,10 +63,6 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 	}(context.WithoutCancel(c.Request().Context()), params.URL)
 
 	// リダイレクト
-	logging.FromContext(c.Request().Context()).Info("redirected",
-		slog.String("url", params.URL),
-		slog.String("user_id", visitor.ID),
-		slog.String("username", visitor.Username),
-	)
+	logging.FromContext(c.Request().Context()).Info("redirected", slog.String("url", params.URL))
 	return c.Redirect(http.StatusFound, params.URL)
 }

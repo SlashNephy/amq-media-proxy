@@ -15,9 +15,6 @@ type Config struct {
 	ValidReferer    string `env:"VALID_REFERER"`
 	ValidOrigin     string `env:"VALID_ORIGIN"`
 
-	CloudflareAccessTeamDomain     string `env:"CLOUDFLARE_ACCESS_TEAM_DOMAIN"`
-	CloudflareAccessPolicyAudience string `env:"CLOUDFLARE_ACCESS_POLICY_AUDIENCE"`
-
 	QuestionsJSONPath string `env:"QUESTIONS_JSON_PATH"`
 }
 

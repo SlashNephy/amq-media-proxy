@@ -1,7 +1,6 @@
 package controller
 
 import (
-	cloudflareAccess "github.com/SlashNephy/amq-media-proxy/web/middleware/cloudflare_access"
 	"github.com/labstack/echo/v4"
 
 	"github.com/SlashNephy/amq-media-proxy/usecase/media"
@@ -9,27 +8,23 @@ import (
 )
 
 type Controller struct {
-	media                      media.Usecase
-	validation                 validation.Usecase
-	cloudflareAccessMiddleware *cloudflareAccess.Middleware
+	media      media.Usecase
+	validation validation.Usecase
 }
 
 func NewController(
 	media media.Usecase,
 	validation validation.Usecase,
-	cloudflareAccessMiddleware *cloudflareAccess.Middleware,
 ) *Controller {
 	return &Controller{
-		media:                      media,
-		validation:                 validation,
-		cloudflareAccessMiddleware: cloudflareAccessMiddleware,
+		media:      media,
+		validation: validation,
 	}
 }
 
 func (co *Controller) RegisterRoutes(e *echo.Echo) {
 	e.GET("/healthcheck", co.HandleGetHealthcheck)
 
-	api := e.Group("/api", co.cloudflareAccessMiddleware.Process)
+	api := e.Group("/api")
 	api.GET("/media", co.HandleGetApiMedia)
-	api.GET("/user", co.handleGetApiUser)
 }

@@ -13,7 +13,6 @@ import (
 	"github.com/SlashNephy/amq-media-proxy/config"
 	"github.com/SlashNephy/amq-media-proxy/logging"
 	"github.com/SlashNephy/amq-media-proxy/web/controller"
-	cloudflareAccess "github.com/SlashNephy/amq-media-proxy/web/middleware/cloudflare_access"
 	"github.com/SlashNephy/amq-media-proxy/web/middleware/logger"
 )
 
@@ -26,7 +25,6 @@ func NewServer(
 	config *config.Config,
 	controller *controller.Controller,
 	loggerMiddleware *logger.Middleware,
-	cloudflareAccessMiddleware *cloudflareAccess.Middleware,
 ) *Server {
 	e := echo.New()
 	e.HideBanner = true
@@ -62,24 +60,12 @@ func NewServer(
 			LogRemoteIP:  true,
 			LogUserAgent: true,
 			LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-				visitor := cloudflareAccess.GetVisitor(c)
-				var (
-					visitorID   string
-					visitorName string
-				)
-				if visitor != nil {
-					visitorID = visitor.ID
-					visitorName = visitor.Username
-				}
-
 				logger := logging.FromContext(c.Request().Context())
 				logger.InfoContext(c.Request().Context(), "request",
 					slog.Int("status", v.Status),
 					slog.String("method", v.Method),
 					slog.String("uri", v.URI),
 					slog.String("remote_ip", v.RemoteIP),
-					slog.String("user_id", visitorID),
-					slog.String("username", visitorName),
 					slog.String("user_agent", v.UserAgent),
 					slog.Float64("latency", float64(v.Latency)/float64(time.Second)),
 				)
@@ -92,7 +78,6 @@ func NewServer(
 			AllowCredentials: true,
 		}),
 		middleware.Secure(),
-		cloudflareAccessMiddleware.Process,
 	)
 
 	controller.RegisterRoutes(e)
