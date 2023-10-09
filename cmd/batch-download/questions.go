@@ -2,11 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"math/rand"
 	"os"
 
-	errors2 "github.com/pkg/errors"
+	"github.com/pkg/errors"
 )
 
 type Question struct {
@@ -22,12 +21,12 @@ func parseQuestionsJSON(path string) ([]*Question, error) {
 
 	bytes, err := os.ReadFile(path)
 	if err != nil {
-		return nil, errors2.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
 
 	var questions []*Question
 	if err = json.Unmarshal(bytes, &questions); err != nil {
-		return nil, errors2.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
 
 	return questions, nil
@@ -36,7 +35,7 @@ func parseQuestionsJSON(path string) ([]*Question, error) {
 func LoadMediaURLs(path string) ([]string, error) {
 	questions, err := parseQuestionsJSON(path)
 	if err != nil {
-		return nil, errors2.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
 
 	var urls []string

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"time"
 
@@ -53,7 +52,8 @@ func (d *Downloader) download(url string, current, total int) error {
 	}
 
 	if err := d.media.DownloadMedia(context.WithoutCancel(d.ctx), url); err != nil {
-		return fmt.Errorf("failed to download %s: %w", url, errors.WithStack(err))
+		logging.FromContext(d.ctx).Warn("failed to download", slog.String("url", url), slog.Any("err", err))
+		return nil
 	}
 
 	logging.FromContext(d.ctx).Info("downloaded",
