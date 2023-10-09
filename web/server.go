@@ -73,9 +73,8 @@ func NewServer(
 			},
 		}),
 		middleware.CORSWithConfig(middleware.CORSConfig{
-			AllowOrigins:     []string{config.ValidOrigin},
-			AllowMethods:     []string{http.MethodGet},
-			AllowCredentials: true,
+			AllowOrigins: []string{config.ValidOrigin},
+			AllowMethods: []string{http.MethodGet},
 		}),
 		middleware.Secure(),
 	)
