@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	cloudflareAccess "github.com/SlashNephy/amq-media-proxy/web/middleware/cloudflare_access"
 	"log/slog"
 	"net"
 	"net/http"
@@ -25,6 +26,7 @@ func NewServer(
 	config *config.Config,
 	controller *controller.Controller,
 	loggerMiddleware *logger.Middleware,
+	cloudflareAccessMiddleware *cloudflareAccess.Middleware,
 ) *Server {
 	e := echo.New()
 	e.HideBanner = true
@@ -71,10 +73,12 @@ func NewServer(
 			},
 		}),
 		middleware.CORSWithConfig(middleware.CORSConfig{
-			AllowOrigins: []string{"https://animemusicquiz.com"},
-			AllowMethods: []string{http.MethodGet},
+			AllowOrigins:     []string{config.ValidOrigin},
+			AllowMethods:     []string{http.MethodGet},
+			AllowCredentials: true,
 		}),
 		middleware.Secure(),
+		cloudflareAccessMiddleware.Process,
 	)
 
 	controller.RegisterRoutes(e)

@@ -9,9 +9,15 @@ import (
 
 	"github.com/SlashNephy/amq-media-proxy/domain/content_type"
 	"github.com/SlashNephy/amq-media-proxy/logging"
+	cloudflareAccess "github.com/SlashNephy/amq-media-proxy/web/middleware/cloudflare_access"
 )
 
 func (co *Controller) HandleGetApiMedia(c echo.Context) error {
+	visitor := cloudflareAccess.GetVisitor(c)
+	if visitor == nil {
+		return echo.ErrUnauthorized
+	}
+
 	var params struct {
 		URL string `query:"u"`
 	}
