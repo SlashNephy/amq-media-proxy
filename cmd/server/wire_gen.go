@@ -36,7 +36,7 @@ func InitializeServer(ctx context.Context) (*web.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	controllerController := controller.NewController(service, validationService)
+	controllerController := controller.NewController(service, validationService, configConfig)
 	slogLogger, err := logging.NewLogger(configConfig)
 	if err != nil {
 		return nil, err
