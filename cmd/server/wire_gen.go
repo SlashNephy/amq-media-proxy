@@ -13,8 +13,10 @@ import (
 	"github.com/SlashNephy/amq-media-proxy/logging"
 	"github.com/SlashNephy/amq-media-proxy/repository/external/amq"
 	"github.com/SlashNephy/amq-media-proxy/usecase/media"
+	"github.com/SlashNephy/amq-media-proxy/usecase/validation"
 	"github.com/SlashNephy/amq-media-proxy/web"
 	"github.com/SlashNephy/amq-media-proxy/web/controller"
+	"github.com/SlashNephy/amq-media-proxy/web/middleware/cloudflare_access"
 	"github.com/SlashNephy/amq-media-proxy/web/middleware/logger"
 )
 
@@ -27,16 +29,21 @@ func InitializeServer(ctx context.Context) (*web.Server, error) {
 	}
 	realFileSystem := fs.NewRealFileSystem()
 	client := amq.NewAMQClient()
-	mediaService, err := media.NewMediaService(configConfig, realFileSystem, client)
+	service, err := media.NewService(configConfig, realFileSystem, client)
 	if err != nil {
 		return nil, err
 	}
-	controllerController := controller.NewController(mediaService, configConfig)
+	validationService, err := validation.NewService(configConfig)
+	if err != nil {
+		return nil, err
+	}
+	middleware := cloudflare_access.NewMiddleware(ctx, configConfig)
+	controllerController := controller.NewController(service, validationService, middleware)
 	slogLogger, err := logging.NewLogger(configConfig)
 	if err != nil {
 		return nil, err
 	}
-	middleware := logger.NewMiddleware(slogLogger)
-	server := web.NewServer(configConfig, controllerController, middleware)
+	loggerMiddleware := logger.NewMiddleware(slogLogger)
+	server := web.NewServer(configConfig, controllerController, loggerMiddleware, middleware)
 	return server, nil
 }

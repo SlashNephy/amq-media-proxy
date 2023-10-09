@@ -9,5 +9,5 @@ var MockRepos = []any{
 
 //go:generate bulkmockgen MockUsecases -- -typed -package mock_usecase -destination ./mock_usecase/mock_usecase.go
 var MockUsecases = []any{
-	new(media.MediaUsecase),
+	new(media.Usecase),
 }

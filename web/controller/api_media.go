@@ -20,12 +20,12 @@ func (co *Controller) HandleGetApiMedia(c echo.Context) error {
 	}
 
 	// リファラーチェック
-	if c.Request().Referer() != co.config.ValidReferer {
+	if !co.validation.CheckReferer(c.Request().Referer()) {
 		return echo.ErrBadRequest
 	}
 
 	// 不正な URL が来ないかバリデーション
-	if !co.media.IsValidURL(params.URL) {
+	if !co.validation.CheckMediaURL(params.URL) {
 		return echo.ErrBadRequest
 	}
 

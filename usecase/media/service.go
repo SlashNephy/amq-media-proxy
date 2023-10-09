@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"sync"
 
@@ -17,12 +16,10 @@ import (
 	"github.com/SlashNephy/amq-media-proxy/fs"
 )
 
-type MediaService struct {
+type Service struct {
 	config    *config.Config
 	fs        fs.FileSystem
 	amqClient AMQClient
-
-	mediaURLPattern *regexp.Regexp
 
 	// downloadingMap は url をキーとしてダウンロード中であるかを記録する map。値には意味はない
 	downloadingMap map[string]struct{}
@@ -30,26 +27,16 @@ type MediaService struct {
 	downloadingMapMutex sync.Mutex
 }
 
-func NewMediaService(config *config.Config, fs fs.FileSystem, amqClient AMQClient) (*MediaService, error) {
-	regex, err := regexp.Compile(config.MediaURLPattern)
-	if err != nil {
-		return nil, err
-	}
-
-	return &MediaService{
-		config:          config,
-		fs:              fs,
-		amqClient:       amqClient,
-		mediaURLPattern: regex,
-		downloadingMap:  make(map[string]struct{}),
+func NewService(config *config.Config, fs fs.FileSystem, amqClient AMQClient) (*Service, error) {
+	return &Service{
+		config:         config,
+		fs:             fs,
+		amqClient:      amqClient,
+		downloadingMap: make(map[string]struct{}),
 	}, nil
 }
 
-func (s *MediaService) IsValidURL(url string) bool {
-	return s.mediaURLPattern.MatchString(url)
-}
-
-func (s *MediaService) getCachePath(mediaURL string) string {
+func (s *Service) getCachePath(mediaURL string) string {
 	// キャッシュディレクトリを作成
 	if err := os.MkdirAll(s.config.CacheDirectory, os.ModePerm); err != nil {
 		panic(err)
@@ -61,7 +48,7 @@ func (s *MediaService) getCachePath(mediaURL string) string {
 	return path
 }
 
-func (s *MediaService) FindCachedMediaPath(mediaURL string) (string, bool) {
+func (s *Service) FindCachedMediaPath(mediaURL string) (string, bool) {
 	cachePath := s.getCachePath(mediaURL)
 	if ok, _ := s.fs.Exists(cachePath); ok {
 		return cachePath, true
@@ -70,7 +57,7 @@ func (s *MediaService) FindCachedMediaPath(mediaURL string) (string, bool) {
 	return "", false
 }
 
-func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL string) error {
+func (s *Service) DownloadMedia(ctx context.Context, mediaURL string) error {
 	// すでにダウンロード中なら何もしない
 	if s.isDownloading(mediaURL) {
 		return nil
@@ -116,7 +103,7 @@ func (s *MediaService) DownloadMedia(ctx context.Context, mediaURL string) error
 	return os.Rename(tmpCachePath, cachePath)
 }
 
-func (s *MediaService) isDownloading(url string) bool {
+func (s *Service) isDownloading(url string) bool {
 	s.downloadingMapMutex.Lock()
 	defer s.downloadingMapMutex.Unlock()
 
@@ -124,18 +111,18 @@ func (s *MediaService) isDownloading(url string) bool {
 	return ok
 }
 
-func (s *MediaService) lockDownloading(url string) {
+func (s *Service) lockDownloading(url string) {
 	s.downloadingMapMutex.Lock()
 	defer s.downloadingMapMutex.Unlock()
 
 	s.downloadingMap[url] = struct{}{}
 }
 
-func (s *MediaService) unlockDownloading(url string) {
+func (s *Service) unlockDownloading(url string) {
 	s.downloadingMapMutex.Lock()
 	defer s.downloadingMapMutex.Unlock()
 
 	delete(s.downloadingMap, url)
 }
 
-var _ MediaUsecase = (*MediaService)(nil)
+var _ Usecase = (*Service)(nil)

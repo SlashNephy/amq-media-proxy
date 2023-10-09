@@ -5,8 +5,7 @@ import (
 	"net/http"
 )
 
-type MediaUsecase interface {
-	IsValidURL(url string) bool
+type Usecase interface {
 	FindCachedMediaPath(mediaURL string) (string, bool)
 	DownloadMedia(ctx context.Context, mediaURL string) error
 }

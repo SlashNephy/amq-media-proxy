@@ -16,12 +16,12 @@ type MediaServiceMocks struct {
 	amqClient *mock_repo.MockAMQClient
 }
 
-func NewTestMediaService(t *testing.T, cfg *config.Config, exists bool) (*MediaService, *MediaServiceMocks) {
+func NewTestMediaService(t *testing.T, cfg *config.Config, exists bool) (*Service, *MediaServiceMocks) {
 	ctrl := gomock.NewController(t)
 	m := &MediaServiceMocks{
 		amqClient: mock_repo.NewMockAMQClient(ctrl),
 	}
-	s, err := NewMediaService(cfg, fs.NewFakeFileSystem(exists), m.amqClient)
+	s, err := NewService(cfg, fs.NewFakeFileSystem(exists), m.amqClient)
 	require.NoError(t, err)
 	return s, m
 }

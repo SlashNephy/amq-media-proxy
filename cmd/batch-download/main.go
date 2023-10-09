@@ -32,7 +32,7 @@ func main() {
 		panic(err)
 	}
 
-	media, err := media.NewMediaService(cfg, fs.NewRealFileSystem(), amq.NewAMQClient())
+	media, err := media.NewService(cfg, fs.NewRealFileSystem(), amq.NewAMQClient())
 	if err != nil {
 		panic(err)
 	}

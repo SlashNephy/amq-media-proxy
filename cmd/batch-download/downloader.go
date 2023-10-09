@@ -13,12 +13,12 @@ import (
 )
 
 type Downloader struct {
-	media media.MediaUsecase
+	media media.Usecase
 	eg    *errgroup.Group
 	ctx   context.Context
 }
 
-func NewDownloader(ctx context.Context, media media.MediaUsecase, limit int) *Downloader {
+func NewDownloader(ctx context.Context, media media.Usecase, limit int) *Downloader {
 	eg, egctx := errgroup.WithContext(ctx)
 	eg.SetLimit(limit)
 
