@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/caarlos0/env/v9"
+	"github.com/caarlos0/env/v11"
 	"github.com/pkg/errors"
 )
 
