@@ -8,7 +8,7 @@ RUN go mod download
 COPY ./ ./
 RUN make build && make build-batch-download
 
-FROM debian:bullseye-slim@sha256:9bec46ecd98ce4bf8305840b021dda9b3e1f8494a0768c407e2b233180fa1466
+FROM debian:bullseye-slim@sha256:610b4c7ad241e66f6e2f9791e3abdf0cc107a69238ab21bf9b4695d51fd6366a
 WORKDIR /app
 
 RUN <<EOF
