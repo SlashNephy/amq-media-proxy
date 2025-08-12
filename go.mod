@@ -8,7 +8,7 @@ require (
 	github.com/labstack/echo/v4 v4.11.2
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.4
-	github.com/utgwkk/bulkmockgen v0.2.2
+	github.com/utgwkk/bulkmockgen v0.4.2
 	go.uber.org/mock v0.3.0
 	golang.org/x/sync v0.4.0
 )
