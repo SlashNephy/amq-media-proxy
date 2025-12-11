@@ -5,7 +5,7 @@ go 1.21.0
 require (
 	github.com/caarlos0/env/v9 v9.0.0
 	github.com/google/wire v0.5.0
-	github.com/labstack/echo/v4 v4.11.2
+	github.com/labstack/echo/v4 v4.14.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.4
 	github.com/utgwkk/bulkmockgen v0.2.2
